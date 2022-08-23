@@ -5,6 +5,9 @@ Rails.application.routes.draw do
 
   namespace :api do
     resources :users, only: %i[create index]
+    get 'user', action: :showUser, controller: :users
+    resources :product
+    resources :order
     resources :bookmarks
     resources :status
   end

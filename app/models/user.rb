@@ -7,6 +7,8 @@ class User < ApplicationRecord
   validates :email, format: URI::MailTo::EMAIL_REGEXP
 
   has_one :user_profile, dependent: :destroy
+
+  belongs_to :order, optional: true
   
   # has_many :access_tokens,
   #           class_name: 'Doorkeeper::AccessTokens',

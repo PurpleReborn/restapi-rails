@@ -1,20 +1,26 @@
 module Api
     class UsersController < Api::ApplicationController
       skip_before_action :doorkeeper_authorize!, only: %i[create]
+      before_action :user_params, only: %i[create]
 
       def index
-        @users = User.all
-        # return render json: @users
-        if @users
-          render(json: {
-            data: @users,
-            status: 200,
-          })
+        @users = User.page(params[:page] || 1).per(params[:per_page] || 10)
+                .order("#{params[:order_by] || 'created_at'} #{params[:order] || 'desc'}")
+
+        serial_user = @users.map { |user| UserSerializer.new(user, root: false) }
+
+        response_pagination(serial_user, @users, 'List User')
+        # render(json: { data: serial_user }, status: 200)
+      end
+
+      def showUser
+        @user = current_user
+        if @user
+            render json: @user, status: :ok
         else
-          render(json: {
-            message: 'An error occurred while creating the user',
-            status: 404,
-          })
+            render json: {
+                message: "Failed show User"
+            },status: :unprocessable_entity 
         end
       end
   
