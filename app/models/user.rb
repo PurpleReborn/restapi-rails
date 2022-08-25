@@ -1,14 +1,24 @@
 class User < ApplicationRecord
+  include PgSearch::Model
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
+  pg_search_scope :search, against: %i[email],
+                            associated_against: {
+                              user_profile: %i[full_name birth_date]
+                              # user_profile: :full_name
+                            },
+                            using: {
+                              tsearch: {
+                                prefix: true,
+                              }
+                            }
+
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
 
   validates :email, format: URI::MailTo::EMAIL_REGEXP
 
   has_one :user_profile, dependent: :destroy
-
-  belongs_to :order, optional: true
   
   # has_many :access_tokens,
   #           class_name: 'Doorkeeper::AccessTokens',

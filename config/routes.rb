@@ -3,11 +3,13 @@ Rails.application.routes.draw do
     skip_controllers :authorizations, :applications, :authorized_applications
   end
 
-  namespace :api do
+    namespace :api do
     resources :users, only: %i[create index]
     get 'user', action: :showUser, controller: :users
     resources :product
+    resources :order_details
     resources :order
+    resources :customer
     resources :bookmarks
     resources :status
   end

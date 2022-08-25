@@ -2,9 +2,10 @@ module Api
     class UsersController < Api::ApplicationController
       skip_before_action :doorkeeper_authorize!, only: %i[create]
       before_action :user_params, only: %i[create]
+      before_action :search_user, only: %i[index]
 
       def index
-        @users = User.page(params[:page] || 1).per(params[:per_page] || 10)
+        @users = @users.page(params[:page] || 1).per(params[:per_page] || 10)
                 .order("#{params[:order_by] || 'created_at'} #{params[:order] || 'desc'}")
 
         serial_user = @users.map { |user| UserSerializer.new(user, root: false) }
@@ -14,9 +15,9 @@ module Api
       end
 
       def showUser
-        @user = current_user
-        if @user
-            render json: @user, status: :ok
+        user = current_user
+        if user
+            render json: user, status: :ok
         else
             render json: {
                 message: "Failed show User"
@@ -70,6 +71,14 @@ module Api
       end
   
       private
+
+      def search_user
+        @users = if params[:search].present? && params[:search] != '{search}'
+                    User.search(params[:search])
+                  else
+                    User
+                  end
+      end
   
       def user_params
         # params.permit(:email, :password, profile: %i[:full_name, :city])

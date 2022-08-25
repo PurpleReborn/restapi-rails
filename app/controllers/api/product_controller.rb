@@ -1,11 +1,15 @@
 module Api
     class ProductController < ApplicationController
 
-            # GET /product
+    # GET /product
     def index
-      @product = Product.all
+        @product = Product.page(params[:page] || 1).per(params[:per_page] || 10)
+                .order("#{params[:order_by] || 'created_at'} #{params[:order] || 'desc'}")
 
-      render json: @product
+        serial_product = @product.map { |user| ProductSerializer.new(user, root: false) }
+
+        response_pagination(serial_product, @product, 'List Product')
+        # render(json: { data: serial_user }, status: 200)
     end
 
     # POST /product
@@ -24,7 +28,7 @@ module Api
     # Only allow a trusted parameter "white list" through.
 
     def product_params
-      params.require(:product).permit(:product_name, :description, :price)
+      params.require(:product).permit(:name, :description, :price)
     end
 
     end
